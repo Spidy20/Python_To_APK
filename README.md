@@ -5,7 +5,7 @@
 
 ## [Follow us on Instagram for Machine Learning Guidelines & Path](https://www.instagram.com/machine_learning_hub.ai/)
 ## [Buy Python & ML projects for students at lower rate](https://www.instamojo.com/kushalbhavsar1820)
-## [Watch Tutorial for this project](https://youtu.be/zBHqrSm-NSE)
+## [Watch Tutorial for this project](https://youtu.be/mUdnjNGePZw)
 
 ## Usage:-
 
@@ -16,7 +16,7 @@
 - Now we have to convert that GUI(.py) code to APK.
 - For converting python code to APK we need to have linux or mac OS, but dont't worry we have google colab.
 - I have given `android_app.ipynb`, I already given all the instructions of converting code to APK in that `.ipynb` file. Run that in google colab.
-- For mode clear explanation of code watch [tutorial](https://youtu.be/zBHqrSm-NSE)
+- For mode clear explanation of code watch [tutorial](https://youtu.be/mUdnjNGePZw)
 
 ## Screenshots
 
