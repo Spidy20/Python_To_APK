@@ -15,7 +15,7 @@
 - Run `Window+Android_GUI.py`. You can see it is GUI developed using KivyMD, which is running on windows. 
 - Now we have to convert that GUI(.py) code to APK.
 - For converting python code to APK we need to have linux or mac OS, but dont't worry we have google colab.
-- I have given `android_app.ipynb`, I already given all the instructions of converting code to APK in that `.ipynb` file.
+- I have given `android_app.ipynb`, I already given all the instructions of converting code to APK in that `.ipynb` file. Run that in google colab.
 - For mode clear explanation of code watch [tutorial](https://youtu.be/zBHqrSm-NSE)
 
 ## Screenshots
