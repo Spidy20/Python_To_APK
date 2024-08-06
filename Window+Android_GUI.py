@@ -1,5 +1,10 @@
 from kivymd.app import MDApp
 from kivy.lang import Builder
+from kivymd.uix.toolbar import MDTopAppBar
+from kivymd.uix.bottomsheet import MDCustomBottomSheet
+from kivymd.uix.navigationdrawer import MDNavigationDrawer
+from kivymd.uix.bottomnavigation import MDBottomNavigation
+from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 
 class Test(MDApp):
     def build(self):
@@ -8,14 +13,14 @@ class Test(MDApp):
         return Builder.load_string(
             '''
 BoxLayout:
-    orientation:'vertical'
-    MDToolbar:
+    orientation: 'vertical'
+    MDTopAppBar:
         title: 'Programming'
         md_bg_color: app.theme_cls.primary_color
         specific_text_color: 1, 1, 1, 1
 
     MDBottomNavigation:
-                
+            
         MDBottomNavigationItem:
             name: 'screen 1'
             text: 'Python'
