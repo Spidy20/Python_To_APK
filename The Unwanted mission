@@ -1,0 +1,93 @@
+import random
+
+# Initial player setup
+player_inventory = {
+    "Rifle": {"bullets": 10},
+    "First Aid Kit": 1
+}
+player_health = 100
+
+# Helper functions
+def show_inventory():
+    print("\nYour Inventory:")
+    for item, details in player_inventory.items():
+        if isinstance(details, dict):
+            print(f"- {item}: {details}")
+        else:
+            print(f"- {item}: {details}")
+    print(f"Health: {player_health}")
+
+def battle(monster_name, monster_health):
+    global player_health
+    print(f"\nBattle Start! A {monster_name} appears with {monster_health} HP!")
+    while monster_health > 0:
+        print(f"\n{monster_name} HP: {monster_health}")
+        print("Choose an action:")
+        print("1. Attack with Rifle")
+        print("2. Use First Aid Kit")
+        choice = input("Enter 1 or 2: ")
+        
+        if choice == "1" and player_inventory["Rifle"]["bullets"] > 0:
+            damage = random.randint(5, 15)
+            monster_health -= damage
+            player_inventory["Rifle"]["bullets"] -= 1
+            print(f"You deal {damage} damage! Bullets left: {player_inventory['Rifle']['bullets']}")
+        elif choice == "2" and player_inventory["First Aid Kit"] > 0:
+            player_health = min(100, player_health + 20)
+            player_inventory["First Aid Kit"] -= 1
+            print("You used a First Aid Kit. Health restored to", player_health)
+        else:
+            print("Invalid choice or out of resources.")
+        
+        if monster_health > 0:
+            monster_damage = random.randint(10, 20)
+            player_health -= monster_damage
+            print(f"The {monster_name} attacks and deals {monster_damage} damage! Your health: {player_health}")
+            if player_health <= 0:
+                print("You've been defeated!")
+                return False
+    print(f"The {monster_name} has been defeated!")
+    return True
+
+# Game start
+print("Welcome to The Unwanted Mission!")
+print("You stand in your house just outside the city, ready to face monsters.")
+show_inventory()
+
+# Game decision loop
+while True:
+    print("\nChoose your action:")
+    print("1. Go to the warehouse to find more supplies.")
+    print("2. Head into the city to find allies.")
+    print("3. Move deeper into the city to encounter monsters.")
+    action = input("Enter 1, 2, or 3: ")
+
+    if action == "1":
+        print("\nYou find additional supplies at the warehouse!")
+        player_inventory["Shotgun"] = {"shells": 5}
+        player_inventory["Armor Vest"] = 1
+        show_inventory()
+    elif action == "2":
+        print("\nYou meet a teammate who gives you some extra bullets!")
+        player_inventory["Rifle"]["bullets"] += 5
+        show_inventory()
+    elif action == "3":
+        print("\nYou move deeper into the city and encounter a monster!")
+        if not battle("Level 1 Monster", 30):
+            print("Game Over")
+            break
+    else:
+        print("Invalid action, try again.")
+    
+    if player_health <= 0:
+        print("Game Over. You were defeated.")
+        break
+
+    # Final monster encounter after gathering resources
+    if action == "3" and "Shotgun" in player_inventory:
+        print("\nYou've reached the final level: The Big Monster appears!")
+        if battle("Big Monster", 100):
+            print("Congratulations! You have defeated the Big Monster and completed The Unwanted Mission!")
+        else:
+            print("Game Over. The Big Monster was too powerful.")
+        break
