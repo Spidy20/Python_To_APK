@@ -1,0 +1,117 @@
+import tkinter as tk
+from tkinter import messagebox
+import time
+import cv2
+from PIL import Image, ImageTk
+import threading
+
+class ReminderApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("یادآوری کننده")
+        self.root.geometry("600x500")
+
+        # متغیرها
+        self.tasks = []
+        self.task_images = {}
+        self.image_wait_time = 30  # زمان منتظر بودن برای عکس (ثانیه)
+
+        # ساخت ساعت
+        self.label_time = tk.Label(root, text="00:00", font=("Helvetica", 48))
+        self.label_time.pack(pady=20)
+
+        # ورودی کارها
+        self.task_label = tk.Label(root, text="کارها:", font=("Helvetica", 14))
+        self.task_label.pack()
+
+        self.task_entry = tk.Entry(root, font=("Helvetica", 14))
+        self.task_entry.pack(pady=10)
+
+        self.add_task_button = tk.Button(root, text="افزودن کار", font=("Helvetica", 14), command=self.add_task)
+        self.add_task_button.pack(pady=10)
+
+        self.show_task_button = tk.Button(root, text="نمایش کارها", font=("Helvetica", 14), command=self.show_tasks)
+        self.show_task_button.pack(pady=10)
+
+        self.check_image_button = tk.Button(root, text="ارسال عکس", font=("Helvetica", 14), command=self.capture_image)
+        self.check_image_button.pack(pady=10)
+
+        # فریم نمایش لیست کارها
+        self.task_list_label = tk.Label(root, text="لیست کارها:", font=("Helvetica", 14))
+        self.task_list_label.pack(pady=10)
+
+        self.task_list_display = tk.Label(root, text="", font=("Helvetica", 12))
+        self.task_list_display.pack(pady=10)
+
+        # آپدیت ساعت
+        self.update_time()
+
+    def update_time(self):
+        current_time = time.strftime("%H:%M:%S")
+        self.label_time.config(text=current_time)
+        self.root.after(1000, self.update_time)
+
+    def add_task(self):
+        task = self.task_entry.get()
+        if task != "":
+            self.tasks.append(task)
+            self.task_images[task] = False  # False به این معنی است که عکس ارسال نشده
+            self.show_tasks()
+        self.task_entry.delete(0, tk.END)
+
+    def show_tasks(self):
+        task_list = "\n".join(self.tasks)
+        self.task_list_display.config(text=task_list)
+
+    def capture_image(self):
+        # گرفتن تصویر از وبکم
+        cap = cv2.VideoCapture(0)  # گرفتن تصویر از دوربین پیش‌فرض
+        if not cap.isOpened():
+            messagebox.showerror("خطا", "دوربین به درستی راه‌اندازی نشد.")
+            return
+        
+        ret, frame = cap.read()
+        if ret:
+            filename = "captured_image.jpg"
+            cv2.imwrite(filename, frame)  # ذخیره عکس
+            cap.release()
+            cv2.destroyAllWindows()
+
+            # چک کردن تصویر
+            self.check_image(filename)
+        else:
+            messagebox.showwarning("خطا", "مشکلی در دریافت تصویر از دوربین وجود دارد.")
+            cap.release()
+
+    def check_image(self, filename):
+        # بررسی اینکه آیا تصویر از مسواک زدن است
+        # این بخش باید با الگوریتم‌های تشخیص تصویر تکمیل شود
+        image = cv2.imread(filename)
+        if image is None:
+            messagebox.showerror("خطا", "تصویر نادرست است.")
+            return
+        
+        # اینجا می‌توانید الگوریتم‌های پردازش تصویر برای تشخیص مسواک زدن را اضافه کنید
+        self.process_image(image)
+
+    def process_image(self, image):
+        # پردازش تصویر و تعیین اینکه آیا مسواک زدن است
+        # در اینجا به طور ساده وضعیت انجام کار را تغییر می‌دهیم
+        self.task_images["مسواک زدن"] = True  # فرض می‌کنیم تصویر صحیح است
+        self.show_tasks()
+
+    def check_for_photos(self):
+        # بررسی عکس‌ها و ارسال آلارم در صورت لزوم
+        for task, completed in self.task_images.items():
+            if not completed:
+                messagebox.showwarning("یادآوری", f"لطفاً {task} خود را انجام دهید!")
+                break
+
+        self.root.after(self.image_wait_time * 1000, self.check_for_photos)  # چک کردن هر 30 ثانیه
+
+# ایجاد پنجره اصلی
+root = tk.Tk()
+app = ReminderApp(root)
+app.check_for_photos()  # شروع به بررسی عکس‌ها
+
+root.mainloop()
