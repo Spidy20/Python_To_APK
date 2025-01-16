@@ -1,0 +1,139 @@
+import pygame
+import random
+import sys
+
+# Initialize Pygame
+pygame.init()
+
+# Screen dimensions
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Race Your Life: Zombies Everywhere")
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+
+# Game variables
+FPS = 60
+clock = pygame.time.Clock()
+font = pygame.font.Font(None, 36)
+
+# Load assets (replace with your assets)
+car_img = pygame.image.load("car.png")  # Replace with your car image
+zombie_img = pygame.image.load("zombie.png")  # Replace with your zombie image
+bullet_img = pygame.image.load("bullet.png")  # Replace with your bullet image
+
+# Scale images
+car_img = pygame.transform.scale(car_img, (60, 100))
+zombie_img = pygame.transform.scale(zombie_img, (50, 70))
+bullet_img = pygame.transform.scale(bullet_img, (10, 20))
+
+# Classes
+class Car:
+    def __init__(self):
+        self.x = WIDTH // 2
+        self.y = HEIGHT - 120
+        self.speed = 5
+        self.health = 100
+
+    def draw(self):
+        screen.blit(car_img, (self.x, self.y))
+
+    def move(self, keys):
+        if keys[pygame.K_LEFT] and self.x > 0:
+            self.x -= self.speed
+        if keys[pygame.K_RIGHT] and self.x < WIDTH - 60:
+            self.x += self.speed
+
+class Bullet:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.speed = 10
+
+    def move(self):
+        self.y -= self.speed
+
+    def draw(self):
+        screen.blit(bullet_img, (self.x, self.y))
+
+class Zombie:
+    def __init__(self):
+        self.x = random.randint(0, WIDTH - 50)
+        self.y = random.randint(-150, -50)
+        self.speed = random.randint(2, 5)
+
+    def move(self):
+        self.y += self.speed
+
+    def draw(self):
+        screen.blit(zombie_img, (self.x, self.y))
+
+# Game setup
+car = Car()
+bullets = []
+zombies = [Zombie() for _ in range(5)]
+score = 0
+level = 1
+
+# Main game loop
+running = True
+while running:
+    screen.fill(BLACK)
+
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                bullets.append(Bullet(car.x + 25, car.y))  # Fire bullet
+
+    # Movement
+    keys = pygame.key.get_pressed()
+    car.move(keys)
+
+    for bullet in bullets[:]:
+        bullet.move()
+        if bullet.y < 0:
+            bullets.remove(bullet)
+
+    for zombie in zombies[:]:
+        zombie.move()
+        if zombie.y > HEIGHT:
+            zombies.remove(zombie)
+            zombies.append(Zombie())
+        for bullet in bullets[:]:
+            if zombie.x < bullet.x < zombie.x + 50 and zombie.y < bullet.y < zombie.y + 70:
+                bullets.remove(bullet)
+                zombies.remove(zombie)
+                zombies.append(Zombie())
+                score += 10
+                if score % 50 == 0:
+                    level += 1
+                    zombies.append(Zombie())
+
+    # Draw elements
+    car.draw()
+    for bullet in bullets:
+        bullet.draw()
+    for zombie in zombies:
+        zombie.draw()
+
+    # Display HUD
+    health_text = font.render(f"Health: {car.health}", True, WHITE)
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    level_text = font.render(f"Level: {level}", True, WHITE)
+    screen.blit(health_text, (10, 10))
+    screen.blit(score_text, (10, 40))
+    screen.blit(level_text, (10, 70))
+
+    # Update display
+    pygame.display.flip()
+    clock.tick(FPS)
+
+pygame.quit()
+sys.exit()
