@@ -1,0 +1,80 @@
+import tkinter as tk
+from tkinter import messagebox
+import requests
+from datetime import datetime
+import threading
+import time
+
+API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY'  # Replace with your API key
+
+# Function to fetch weather data
+def fetch_weather(city):
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+    try:
+        response = requests.get(url)
+        data = response.json()
+        if data['cod'] == 200:
+            temp = data['main']['temp']
+            desc = data['weather'][0]['description']
+            humidity = data['main']['humidity']
+            return f"{city.title()}:\n{temp}°C, {desc.title()}, Humidity: {humidity}%"
+        else:
+            return "City not found."
+    except Exception as e:
+        return "Error fetching data."
+
+# GUI setup
+def show_weather():
+    city = city_entry.get()
+    result = fetch_weather(city)
+    weather_label.config(text=result)
+    if city not in recent_cities:
+        recent_cities.insert(0, city)
+        if len(recent_cities) > 5:
+            recent_cities.pop()
+
+def open_settings():
+    messagebox.showinfo("Settings", "Settings options coming soon!")
+
+def show_notifications():
+    if selected_city:
+        result = fetch_weather(selected_city)
+    elif recent_cities:
+        result = fetch_weather(recent_cities[0])
+    else:
+        result = "No region selected."
+    messagebox.showinfo("Weather Notification", result)
+
+def notification_loop():
+    while True:
+        time.sleep(86400)  # 24 hours
+        if selected_city or recent_cities:
+            show_notifications()
+
+# Main window
+root = tk.Tk()
+root.title("Weather_for_cast")
+root.geometry("350x300")
+
+recent_cities = []
+selected_city = None
+
+city_entry = tk.Entry(root, width=25)
+city_entry.pack(pady=10)
+
+search_btn = tk.Button(root, text="Search", command=show_weather)
+search_btn.pack()
+
+weather_label = tk.Label(root, text="", font=("Arial", 12))
+weather_label.pack(pady=20)
+
+settings_icon = tk.Button(root, text="⚙️", command=open_settings)
+settings_icon.place(x=10, y=10)
+
+notification_icon = tk.Button(root, text="🔔", command=show_notifications)
+notification_icon.place(x=50, y=10)
+
+# Start notification thread
+threading.Thread(target=notification_loop, daemon=True).start()
+
+root.mainloop()
