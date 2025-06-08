@@ -1,0 +1,38 @@
+// Flutter-based app for Noori Kashmir Agriculture
+
+import 'package:flutter/material.dart'; import 'package:http/http.dart' as http; import 'dart:convert';
+
+void main() => runApp(NooriKashmirApp());
+
+class NooriKashmirApp extends StatelessWidget { @override Widget build(BuildContext context) { return MaterialApp( title: 'Noori Kashmir Agriculture', theme: ThemeData( primarySwatch: Colors.green, ), home: HomePage(), ); } }
+
+class HomePage extends StatefulWidget { @override _HomePageState createState() => _HomePageState(); }
+
+class _HomePageState extends State<HomePage> { String _weather = "Loading...";
+
+@override void initState() { super.initState(); fetchWeather(); }
+
+Future<void> fetchWeather() async { final apiKey = 'your_api_key_here'; // Use OpenWeatherMap API final city = 'Sopore'; final url = 'https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric';
+
+try {
+  final response = await http.get(Uri.parse(url));
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    setState(() {
+      _weather = "${data['main']['temp']}°C, ${data['weather'][0]['description']}";
+    });
+  } else {
+    setState(() {
+      _weather = "Failed to fetch weather.";
+    });
+  }
+} catch (e) {
+  setState(() {
+    _weather = "Error: $e";
+  });
+}
+
+}
+
+@override Widget build(BuildContext context) { return Scaffold( appBar: AppBar( title: Text('Noori Kashmir Agriculture'), ), body: ListView( children: [ ListTile( title: Text('🌤️ Weather in Sopore'), subtitle: Text(_weather), ), Divider(), ListTile( title: Text('🌾 Crop Recommendations'), subtitle: Text('Rice, Apple, Maize – Based on season and soil type.'), ), Divider(), ListTile( title: Text('📅 Farming Calendar'), subtitle: Text('Sowing: April-May, Harvest: Sept-Oct, etc.'), ), Divider(), ListTile( title: Text('📉 Market Prices'),
+
