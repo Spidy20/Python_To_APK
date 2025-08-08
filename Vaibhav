@@ -1,0 +1,478 @@
+Alexa — Personal Android Assistant (Full Project Files)
+
+Below are the full files for a simple, single-Activity Android app named Alexa (personal assistant for Vaibhav). Copy these files into an Android Studio project with the same package name (com.example.alexaassistant) and build the APK.
+
+
+---
+
+README
+
+Project: Alexa - Personal Assistant
+Package: com.example.alexaassistant
+Android Studio: Arctic Fox / Bumblebee or newer
+Language: Java
+Min SDK: 21
+Target SDK: 33
+
+What this app does:
+- Basic voice + button interface
+- Uses SpeechRecognizer for voice commands
+- Uses TextToSpeech for replies (Hindi + English)
+- Executes common commands via Intents: dial, open app/YouTube, web search, send SMS intent, set alarm intent
+
+How to build:
+1. Create a new Android Studio project (Empty Activity) with package com.example.alexaassistant
+2. Replace files with the ones below (manifest, layouts, java files, gradle).
+3. Sync Gradle and run on a real device (for SpeechRecognizer & TTS real device is recommended).
+4. Grant microphone permission when asked.
+
+Notes:
+- This is a starter template. For production add better NLP, networked AI, wake-word detection, and robust permission handling.
+
+
+---
+
+File: settings.gradle
+
+rootProject.name = "AlexaAssistant"
+include ':app'
+
+
+---
+
+File: build.gradle (Project)
+
+// Top-level build file
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.4.2'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+
+---
+
+File: app/build.gradle
+
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.example.alexaassistant'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.example.alexaassistant"
+        minSdk 21
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+}
+
+
+---
+
+File: AndroidManifest.xml
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.alexaassistant">
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- CALL_PHONE is not strictly required if we use dial intent -->
+    <!-- <uses-permission android:name="android.permission.CALL_PHONE"/> -->
+
+    <application
+        android:allowBackup="true"
+        android:label="Alexa"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AlexaAssistant">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+
+
+---
+
+File: res/layout/activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/tvGreeting"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Namaste Vaibhav! Alexa yahan hai."
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/tvSpokenText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="(Koi command bolo ya mic dabao)"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/tvGreeting"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/btnMic"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:text="🎤"
+        android:textSize="30sp"
+        app:layout_constraintTop_toBottomOf="@id/tvSpokenText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+
+    <LinearLayout
+        android:id="@+id/btnRow"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/btnMic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btnCall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Call" />
+
+        <Button
+            android:id="@+id/btnSMS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SMS"
+            android:layout_marginStart="8dp" />
+
+        <Button
+            android:id="@+id/btnSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Search"
+            android:layout_marginStart="8dp" />
+
+        <Button
+            android:id="@+id/btnYouTube"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="YouTube"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvHint"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Commands example: 'Call Papa', 'Send SMS to 99999', 'Open YouTube', 'Search weather in Delhi'"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/btnRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+---
+
+File: res/values/strings.xml
+
+<resources>
+    <string name="app_name">Alexa</string>
+</resources>
+
+
+---
+
+File: res/values/styles.xml
+
+<resources>
+    <style name="Theme.AlexaAssistant" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">#2E7D32</item>
+        <item name="colorPrimaryVariant">#1B5E20</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+    </style>
+</resources>
+
+
+---
+
+File: src/main/java/com/example/alexaassistant/MainActivity.java
+
+package com.example.alexaassistant;
+
+import android.Manifest;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.speech.RecognitionListener;
+import android.speech.tts.TextToSpeech;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import java.util.ArrayList;
+import java.util.Locale;
+
+public class MainActivity extends AppCompatActivity {
+
+    private static final int REQ_CODE_SPEECH_INPUT = 100;
+    private TextView tvSpokenText, tvGreeting;
+    private Button btnMic, btnCall, btnSMS, btnSearch, btnYouTube;
+    private TextToSpeech tts;
+
+    private ActivityResultLauncher<String> requestPermissionLauncher;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        tvSpokenText = findViewById(R.id.tvSpokenText);
+        tvGreeting = findViewById(R.id.tvGreeting);
+        btnMic = findViewById(R.id.btnMic);
+        btnCall = findViewById(R.id.btnCall);
+        btnSMS = findViewById(R.id.btnSMS);
+        btnSearch = findViewById(R.id.btnSearch);
+        btnYouTube = findViewById(R.id.btnYouTube);
+
+        // TextToSpeech init
+        tts = new TextToSpeech(this, status -> {
+            if (status == TextToSpeech.SUCCESS) {
+                // Default to English; we'll switch to Hindi when needed
+                tts.setLanguage(Locale.ENGLISH);
+                speak("Namaste Vaibhav, Alexa aapki seva mein.");
+            }
+        });
+
+        // Permission launcher
+        requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+            if (isGranted) {
+                // permission granted
+            }
+        });
+
+        btnMic.setOnClickListener(v -> startVoiceInput());
+
+        btnCall.setOnClickListener(v -> speakThenPerform("Kaun call karna hai? Bol do."));
+        btnSMS.setOnClickListener(v -> speakThenPerform("SMS kis number par bhejna hai? Bol do."));
+        btnSearch.setOnClickListener(v -> speakThenPerform("Kya search karna hai?"));
+        btnYouTube.setOnClickListener(v -> {
+            speak("YouTube khol raha hoon");
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com"));
+            startActivity(i);
+        });
+
+        // Ask for audio permission
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
+        }
+    }
+
+    private void speakThenPerform(String prompt) {
+        speak(prompt);
+        startVoiceInput();
+    }
+
+    private void startVoiceInput() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        // Allow both Hindi and English
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "hi-IN");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Bol dijiye...");
+        try {
+            startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
+        } catch (ActivityNotFoundException a) {
+            speak("Speech recognition not supported on this device.");
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQ_CODE_SPEECH_INPUT) {
+            if (resultCode == RESULT_OK && null != data) {
+                ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                if (result != null && result.size() > 0) {
+                    String spoken = result.get(0);
+                    tvSpokenText.setText(spoken);
+                    handleCommand(spoken);
+                }
+            }
+        }
+    }
+
+    private void handleCommand(String cmd) {
+        String lower = cmd.toLowerCase();
+
+        // Greeting
+        if (lower.contains("hello") || lower.contains("hi") || lower.contains("namaste") || lower.contains("namaskar")) {
+            speak("Namaste Vaibhav, main Alexa hoon. Aap kya karna chahenge?");
+            return;
+        }
+
+        // Call command
+        if (lower.contains("call") || lower.contains("call to") || lower.contains("call kar") || lower.contains("call papa") ) {
+            // Try to extract number or name - simplify: if number present, open dialer
+            String number = extractNumber(lower);
+            if (!number.isEmpty()) {
+                speak("Dialing " + number);
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + number));
+                startActivity(intent);
+            } else {
+                // If no number, open dialer and tell user to dial
+                speak("Dialer khol raha hoon. Number bolo ya choose karo.");
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                startActivity(intent);
+            }
+            return;
+        }
+
+        // SMS command
+        if (lower.contains("sms") || lower.contains("send sms") || lower.contains("message")) {
+            String number = extractNumber(lower);
+            String body = "";
+            // Try to split on "saying" or "that"
+            if (lower.contains("saying")) {
+                int idx = lower.indexOf("saying");
+                body = cmd.substring(idx + 6).trim();
+            }
+            if (!number.isEmpty()) {
+                speak("SMS intent khol raha hoon");
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("sms:" + number));
+                intent.putExtra("sms_body", body);
+                startActivity(intent);
+            } else {
+                speak("Kis number par bhejna hai? Bol do.");
+                startVoiceInput();
+            }
+            return;
+        }
+
+        // YouTube
+        if (lower.contains("youtube") || lower.contains("open youtube")) {
+            speak("YouTube khol raha hoon");
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=" + Uri.encode(cmd)));
+            startActivity(intent);
+            return;
+        }
+
+        // Search / web
+        if (lower.contains("search") || lower.contains("who is") || lower.contains("what is") || lower.contains("weather") ) {
+            speak("Search karta hoon");
+            Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+            intent.putExtra(android.app.SearchManager.QUERY, cmd);
+            startActivity(intent);
+            return;
+        }
+
+        // Fallback
+        speak("Mujhe samajh nahi aaya. Doosra tareeka try karo ya mic dubara dabao.");
+    }
+
+    private String extractNumber(String text) {
+        // Very naive number extractor: digits only
+        StringBuilder sb = new StringBuilder();
+        for (char c : text.toCharArray()) {
+            if (Character.isDigit(c)) sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    private void speak(String text) {
+        // If text contains Hindi characters or key Hindi words, use Hindi locale
+        if (text.matches(".*[\\u0900-\\u097F].*") || text.toLowerCase().contains("namaste") || text.toLowerCase().contains("vaibhav") || text.toLowerCase().contains("kya")) {
+            tts.setLanguage(new Locale("hi", "IN"));
+        } else {
+            tts.setLanguage(Locale.ENGLISH);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "AlexaUtteranceId");
+        } else {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
+    }
+}
+
+
+
+
+
+---
+
+End of project files.
+
