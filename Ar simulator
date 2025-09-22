@@ -1,0 +1,94 @@
+# A very simplified text-based car game
+
+player_name = "CJ"
+player_location = "Home"
+money = 500
+car_model = "Swift"
+has_mission = False
+mission_target = "Bank"
+
+def show_status():
+    """Prints the player's current status."""
+    print("\n--- Player Status ---")
+    print(f"Name: {player_name}")
+    print(f"Location: {player_location}")
+    print(f"Car: {car_model}")
+    print(f"Money: ${money}")
+    print("---------------------\n")
+
+def go_to(destination):
+    """Moves the player to a new location."""
+    global player_location
+    print(f"Driving the {car_model} to {destination}...")
+    player_location = destination
+    print(f"You have arrived at {player_location}.")
+
+def start_mission():
+    """Starts a simple mission."""
+    global has_mission, mission_target
+    if not has_mission:
+        print(f"A new mission is available! Go to the {mission_target}.")
+        has_mission = True
+    else:
+        print("You are already on a mission.")
+
+def complete_mission():
+    """Completes the mission and awards money."""
+    global has_mission, money
+    if has_mission and player_location == mission_target:
+        print("Mission complete! You successfully delivered the package.")
+        money += 1000
+        has_mission = False
+        print("You earned $1000!")
+    elif has_mission and player_location != mission_target:
+        print(f"You're not at the right place. Go to the {mission_target} to complete the mission.")
+    else:
+        print("You don't have an active mission.")
+
+def buy_car(new_car, cost):
+    """Allows the player to buy a new car."""
+    global money, car_model
+    if money >= cost:
+        print(f"You bought a new {new_car} for ${cost}!")
+        money -= cost
+        car_model = new_car
+    else:
+        print(f"You don't have enough money to buy the {new_car}. You need ${cost}.")
+
+# --- Game Loop ---
+while True:
+    show_status()
+    print("What do you want to do?")
+    print("1. Go to a new location")
+    print("2. Start a mission")
+    print("3. Complete the current mission")
+    print("4. Go to the car shop")
+    print("5. Exit game")
+    
+    choice = input("Enter your choice: ")
+    
+    if choice == "1":
+        destination = input("Where do you want to go? (Home, Bank, Shop): ")
+        if destination in ["Home", "Bank", "Shop"]:
+            go_to(destination)
+        else:
+            print("Invalid location.")
+    elif choice == "2":
+        start_mission()
+    elif choice == "3":
+        complete_mission()
+    elif choice == "4":
+        print("\n--- Car Shop ---")
+        print("1. Thar ($2500)")
+        print("2. Buy Nothing")
+        car_choice = input("Enter your choice: ")
+        if car_choice == "1":
+            buy_car("Thar", 2500)
+        else:
+            print("You decided not to buy a car.")
+    elif choice == "5":
+        print("Thanks for playing! Goodbye.")
+        break
+    else:
+        print("Invalid choice. Please try again.")
+
